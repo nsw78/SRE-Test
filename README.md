@@ -25,5 +25,4 @@ Utilize alguma linguagem/ferramenta de sua preferência para gerar alguns ou tod
 A forma com que os processos forem organizados será levada em conta para a avaliação, quanto mais flexível e reutilizável o conceito, melhor
 O exercício deverá ser entregue via git (se possível clonavel por https publicamente)
 
-Envie também as instruções necessárias para replicar a execução tenha em mente que vamos rodar e criar nossas próprias modificações na sua estrutura como forma de avaliar, perguntas serão feitas sobre o motivo de suas escolhas #comentários de todos os tipos no código e commits serão bem vindos![image](https://user-images.githubusercontent.com/50062575/144103591-1a48ea61-204e-4e92-9c72-fc9caf32d3e2.png)
-![image](https://user-images.githubusercontent.com/50062575/144103944-ea0971eb-24be-4a6a-b6a2-4098a97915ae.png)
+Envie também as instruções necessárias para replicar a execução tenha em mente que vamos rodar e criar nossas próprias modificações na sua estrutura como forma de avaliar, perguntas serão feitas sobre o motivo de suas escolhas #comentários de todos os tipos no código e commits serão bem vindos!
