@@ -1,4 +1,8 @@
-**Como instalar o WordPress com Docker Compose**
+Como instalar o WordPress com Docker Compose
+
+Pré-requisitos
+
+Para seguir este tutorial, você precisará de:
 
 Um servidor executando Ubuntu 18.04, junto com um usuário não root com sudoprivilégios e um firewall ativo. Para obter orientação sobre como configurá-los, consulte este guia de configuração inicial do servidor .
 Docker instalado em seu servidor, seguindo as etapas 1 e 2 de Como instalar e usar o Docker no Ubuntu 18.04 .
@@ -14,23 +18,23 @@ Antes de executar qualquer contêiner, nossa primeira etapa será definir a conf
 Primeiro, crie um diretório de projeto para a configuração do WordPress chamado wordpresse navegue até ele:
 
 mkdir wordpress && cd wordpress
-
+ 
 Em seguida, crie um diretório para o arquivo de configuração:
 
 mkdir nginx-conf
-
+ 
 Abra o arquivo com nanoou com seu editor favorito:
 
 nano nginx-conf/nginx.conf
-
-Neste arquivo, adicionaremos um bloco de servidor com diretivas para o nosso nome de servidor e raiz do documento, e blocos de localização para direcionar a solicitação do cliente Certbot para certificados, processamento de PHP e solicitações de ativos estáticos.
+ 
+Neste arquivo, adicionaremos um bloco de servidor com diretivas para o nome do nosso servidor e raiz do documento, e blocos de localização para direcionar a solicitação do cliente Certbot por certificados, processamento de PHP e solicitações de ativos estáticos.
 
 Cole o código a seguir no arquivo. Certifique-se de substituir example.compelo seu próprio nome de domínio:
 
 ~ / wordpress / nginx-conf / nginx.conf
 server {
-listen 80;
-listen [::]:80;
+        listen 80;
+        listen [::]:80;
 
         server_name example.com www.example.com;
 
@@ -72,7 +76,7 @@ listen [::]:80;
                 log_not_found off;
         }
 }
-
+ 
 Nosso bloco de servidor inclui as seguintes informações:
 
 Diretivas:
@@ -103,7 +107,7 @@ Em vez de definir todos esses valores em nosso arquivo Docker Compose - o arquiv
 No diretório principal do projeto , abra um arquivo chamado :~/wordpress.env
 
 nano .env
-
+ 
 Os valores confidenciais que definiremos neste arquivo incluem uma senha para nosso usuário root do MySQL e um nome de usuário e senha que o WordPress usará para acessar o banco de dados.
 
 Adicione os seguintes nomes de variáveis ​​e valores ao arquivo. Lembre-se de fornecer seus próprios valores aqui para cada variável:
@@ -112,7 +116,7 @@ Adicione os seguintes nomes de variáveis ​​e valores ao arquivo. Lembre-se 
 MYSQL_ROOT_PASSWORD=your_root_password
 MYSQL_USER=your_wordpress_database_user
 MYSQL_PASSWORD=your_wordpress_database_password
-
+ 
 Incluímos uma senha para a conta administrativa root , bem como nosso nome de usuário e senha preferenciais para nosso banco de dados de aplicativo.
 
 Salve e feche o arquivo quando terminar de editar.
@@ -122,16 +126,16 @@ Como seu .envarquivo contém informações confidenciais, você desejará garant
 Se você planeja trabalhar com Git para controle de versão, inicialize seu diretório de trabalho atual como um repositório com git init:
 
 git init
-
+ 
 Em seguida, abra um .gitignorearquivo:
 
 nano .gitignore
-
+ 
 Adicione .envao arquivo:
 
 ~ / wordpress / .gitignore
 .env
-
+ 
 Salve e feche o arquivo quando terminar de editar.
 
 Da mesma forma, é uma boa precaução adicionar .enva um .dockerignorearquivo, para que ele não vá parar em seus contêineres quando você estiver usando este diretório como seu contexto de construção.
@@ -139,12 +143,12 @@ Da mesma forma, é uma boa precaução adicionar .enva um .dockerignorearquivo, 
 Abra o arquivo:
 
 nano .dockerignore
-
+ 
 Adicione .envao arquivo:
 
 ~ / wordpress / .dockerignore
 .env
-
+ 
 Abaixo disso, você pode opcionalmente adicionar arquivos e diretórios associados ao desenvolvimento do seu aplicativo:
 
 ~ / wordpress / .dockerignore
@@ -152,7 +156,7 @@ Abaixo disso, você pode opcionalmente adicionar arquivos e diretórios associad
 .git
 docker-compose.yml
 .dockerignore
-
+ 
 Salve e feche o arquivo quando terminar.
 
 Com suas informações confidenciais no lugar, agora você pode prosseguir para definir seus serviços em um docker-compose.ymlarquivo.
@@ -165,29 +169,29 @@ Usando o Compose, você pode definir diferentes serviços para executar aplicati
 Para começar, abra o docker-compose.ymlarquivo:
 
 nano docker-compose.yml
-
+ 
 Adicione o seguinte código para definir a versão do arquivo Compose e o dbserviço de banco de dados:
 
 ~ / wordpress / docker-compose.yml
 version: '3'
 
 services:
-db:
-image: mysql:8.0
-container_name: db
-restart: unless-stopped
-env_file: .env
-environment:
-- MYSQL_DATABASE=wordpress
-volumes:
-- dbdata:/var/lib/mysql
-command: '--default-authentication-plugin=mysql_native_password'
-networks:
-- app-network
-
+  db:
+    image: mysql:8.0
+    container_name: db
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - MYSQL_DATABASE=wordpress
+    volumes:
+      - dbdata:/var/lib/mysql
+    command: '--default-authentication-plugin=mysql_native_password'
+    networks:
+      - app-network
+ 
 A dbdefinição de serviço contém as seguintes opções:
 
-image: Isso informa ao Compose qual imagem puxar para criar o contêiner. Estamos fixando a imagem aqui para evitar conflitos futuros, pois a imagem continua sendo atualizada. Para obter mais informações sobre a fixação de versão e como evitar conflitos de dependência, consulte a documentação do Docker sobre as práticas recomendadas do Dockerfile .mysql:8.0mysql:latest
+image: Isso informa ao Compose qual imagem extrair para criar o contêiner. Estamos fixando a imagem aqui para evitar conflitos futuros, pois a imagem continua sendo atualizada. Para obter mais informações sobre a fixação de versão e como evitar conflitos de dependência, consulte a documentação do Docker sobre as práticas recomendadas do Dockerfile .mysql:8.0mysql:latest
 container_name: Isso especifica um nome para o contêiner.
 restart: Isso define a política de reinicialização do contêiner. O padrão é no, mas definimos o contêiner para reiniciar a menos que seja interrompido manualmente.
 env_file: Esta opção diz ao Compose que gostaríamos de adicionar variáveis ​​de ambiente de um arquivo chamado .env, localizado em nosso contexto de construção. Neste caso, o contexto de construção é nosso diretório atual.
@@ -199,23 +203,23 @@ Em seguida, abaixo de sua dbdefinição de serviço, adicione a definição para
 
 ~ / wordpress / docker-compose.yml
 ...
-wordpress:
-depends_on:
-- db
-image: wordpress:5.1.1-fpm-alpine
-container_name: wordpress
-restart: unless-stopped
-env_file: .env
-environment:
-- WORDPRESS_DB_HOST=db:3306
-- WORDPRESS_DB_USER=$MYSQL_USER
-- WORDPRESS_DB_PASSWORD=$MYSQL_PASSWORD
-- WORDPRESS_DB_NAME=wordpress
-volumes:
-- wordpress:/var/www/html
-networks:
-- app-network
-
+  wordpress:
+    depends_on:
+      - db
+    image: wordpress:5.1.1-fpm-alpine
+    container_name: wordpress
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - WORDPRESS_DB_HOST=db:3306
+      - WORDPRESS_DB_USER=$MYSQL_USER
+      - WORDPRESS_DB_PASSWORD=$MYSQL_PASSWORD
+      - WORDPRESS_DB_NAME=wordpress
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - app-network
+ 
 Nesta definição de serviço, estamos nomeando nosso contêiner e definindo uma política de reinicialização, como fizemos com o dbserviço. Também estamos adicionando algumas opções específicas para este contêiner:
 
 depends_on: Esta opção garante que nossos contêineres iniciarão em ordem de dependência, com o wordpresscontêiner iniciando após o dbcontêiner. Nosso aplicativo WordPress depende da existência de nosso banco de dados de aplicativo e usuário, portanto, expressar essa ordem de dependência permitirá que nosso aplicativo seja iniciado corretamente.
@@ -228,21 +232,21 @@ Em seguida, abaixo da wordpressdefinição de serviço de aplicativo, adicione a
 
 ~ / wordpress / docker-compose.yml
 ...
-webserver:
-depends_on:
-- wordpress
-image: nginx:1.15.12-alpine
-container_name: webserver
-restart: unless-stopped
-ports:
-- "80:80"
-volumes:
-- wordpress:/var/www/html
-- ./nginx-conf:/etc/nginx/conf.d
-- certbot-etc:/etc/letsencrypt
-networks:
-- app-network
-
+  webserver:
+    depends_on:
+      - wordpress
+    image: nginx:1.15.12-alpine
+    container_name: webserver
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - wordpress:/var/www/html
+      - ./nginx-conf:/etc/nginx/conf.d
+      - certbot-etc:/etc/letsencrypt
+    networks:
+      - app-network
+ 
 Novamente, estamos nomeando nosso contêiner e tornando-o dependente do wordpresscontêiner na ordem de inicialização. Também estamos usando uma alpineimagem - a 1.15.12-alpineimagem Nginx .
 
 Esta definição de serviço também inclui as seguintes opções:
@@ -258,15 +262,15 @@ Finalmente, abaixo de sua webserverdefinição, adicione sua última definição
 
 ~ / wordpress / docker-compose.yml
 certbot:
-depends_on:
-- webserver
-image: certbot/certbot
-container_name: certbot
-volumes:
-- certbot-etc:/etc/letsencrypt
-- wordpress:/var/www/html
-command: certonly --webroot --webroot-path=/var/www/html --email sammy@example.com --agree-tos --no-eff-email --staging -d example.com -d www.example.com
-
+  depends_on:
+    - webserver
+  image: certbot/certbot
+  container_name: certbot
+  volumes:
+    - certbot-etc:/etc/letsencrypt
+    - wordpress:/var/www/html
+  command: certonly --webroot --webroot-path=/var/www/html --email sammy@example.com --agree-tos --no-eff-email --staging -d example.com -d www.example.com
+ 
 Esta definição diz ao Compose para extrair a certbot/certbotimagem do Docker Hub. Ele também usa volumes nomeados para compartilhar recursos com o contêiner Nginx, incluindo os certificados de domínio e a chave certbot-etce o código do aplicativo wordpress.
 
 Novamente, costumamos depends_onespecificar que o certbotcontêiner deve ser iniciado assim que o webserverserviço estiver em execução.
@@ -285,17 +289,17 @@ Abaixo da certbotdefinição de serviço, adicione suas definições de rede e v
 ~ / wordpress / docker-compose.yml
 ...
 volumes:
-certbot-etc:
-wordpress:
-dbdata:
+  certbot-etc:
+  wordpress:
+  dbdata:
 
 networks:
-app-network:
-driver: bridge
+  app-network:
+    driver: bridge
+ 
+Nosso alto nível volumesfundamental define os volumes certbot-etc, wordpresse dbdata. Quando o Docker cria volumes, o conteúdo do volume é armazenado em um diretório no sistema de arquivos do host /var/lib/docker/volumes/, que é gerenciado pelo Docker. O conteúdo de cada volume é então montado a partir desse diretório para qualquer contêiner que usa o volume. Dessa forma, é possível compartilhar código e dados entre contêineres.
 
-Nosso alto nível volumesfundamental define os volumes certbot-etc, wordpresse dbdata. Quando o Docker cria volumes, o conteúdo do volume é armazenado em um diretório no sistema de arquivos do host /var/lib/docker/volumes/, que é gerenciado pelo Docker. O conteúdo de cada volume é então montado a partir desse diretório para qualquer contêiner que usa o volume. Desta forma, é possível compartilhar código e dados entre contêineres.
-
-A rede de ponte definida pelo usuário app-networkpermite a comunicação entre nossos contêineres, pois eles estão no mesmo host Docker daemon. Isso agiliza o tráfego e a comunicação dentro do aplicativo, pois abre todas as portas entre os contêineres na mesma rede de ponte sem expor nenhuma porta ao mundo externo. Assim, nossos db, wordpresse webserveros recipientes podem se comunicar uns com os outros, e só precisa expor port 80para acesso front-end para o aplicativo.
+A rede de ponte definida pelo usuário app-networkpermite a comunicação entre nossos contêineres, pois eles estão no mesmo host Docker daemon. Isso agiliza o tráfego e a comunicação dentro do aplicativo, pois abre todas as portas entre os contêineres na mesma rede de ponte sem expor nenhuma porta ao mundo externo. Assim, nossos db, wordpresse webserveros recipientes podem se comunicar uns com os outros, e só precisa expor port 80 para acesso front-end para o aplicativo.
 
 O docker-compose.ymlarquivo finalizado terá a seguinte aparência:
 
@@ -303,70 +307,70 @@ O docker-compose.ymlarquivo finalizado terá a seguinte aparência:
 version: '3'
 
 services:
-db:
-image: mysql:8.0
-container_name: db
-restart: unless-stopped
-env_file: .env
-environment:
-- MYSQL_DATABASE=wordpress
+  db:
+    image: mysql:8.0
+    container_name: db
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - MYSQL_DATABASE=wordpress
+    volumes:
+      - dbdata:/var/lib/mysql
+    command: '--default-authentication-plugin=mysql_native_password'
+    networks:
+      - app-network
+
+  wordpress:
+    depends_on:
+      - db
+    image: wordpress:5.1.1-fpm-alpine
+    container_name: wordpress
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - WORDPRESS_DB_HOST=db:3306
+      - WORDPRESS_DB_USER=$MYSQL_USER
+      - WORDPRESS_DB_PASSWORD=$MYSQL_PASSWORD
+      - WORDPRESS_DB_NAME=wordpress
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - app-network
+
+  webserver:
+    depends_on:
+      - wordpress
+    image: nginx:1.15.12-alpine
+    container_name: webserver
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - wordpress:/var/www/html
+      - ./nginx-conf:/etc/nginx/conf.d
+      - certbot-etc:/etc/letsencrypt
+    networks:
+      - app-network
+
+  certbot:
+    depends_on:
+      - webserver
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - wordpress:/var/www/html
+    command: certonly --webroot --webroot-path=/var/www/html --email sammy@example.com --agree-tos --no-eff-email --staging -d example.com -d www.example.com
+
 volumes:
-- dbdata:/var/lib/mysql
-command: '--default-authentication-plugin=mysql_native_password'
+  certbot-etc:
+  wordpress:
+  dbdata:
+
 networks:
-- app-network
-
-wordpress:
-depends_on:
-- db
-image: wordpress:5.1.1-fpm-alpine
-container_name: wordpress
-restart: unless-stopped
-env_file: .env
-environment:
-- WORDPRESS_DB_HOST=db:3306
-- WORDPRESS_DB_USER=$MYSQL_USER
-- WORDPRESS_DB_PASSWORD=$MYSQL_PASSWORD
-- WORDPRESS_DB_NAME=wordpress
-volumes:
-- wordpress:/var/www/html
-networks:
-- app-network
-
-webserver:
-depends_on:
-- wordpress
-image: nginx:1.15.12-alpine
-container_name: webserver
-restart: unless-stopped
-ports:
-- "80:80"
-volumes:
-- wordpress:/var/www/html
-- ./nginx-conf:/etc/nginx/conf.d
-- certbot-etc:/etc/letsencrypt
-networks:
-- app-network
-
-certbot:
-depends_on:
-- webserver
-image: certbot/certbot
-container_name: certbot
-volumes:
-- certbot-etc:/etc/letsencrypt
-- wordpress:/var/www/html
-command: certonly --webroot --webroot-path=/var/www/html --email sammy@example.com --agree-tos --no-eff-email --staging -d example.com -d www.example.com
-
-volumes:
-certbot-etc:
-wordpress:
-dbdata:
-
-networks:
-app-network:
-driver: bridge
-
+  app-network:
+    driver: bridge
+ 
 Salve e feche o arquivo quando terminar de editar.
 
 Com suas definições de serviço no lugar, você está pronto para iniciar os contêineres e testar suas solicitações de certificado.
@@ -377,7 +381,7 @@ Podemos iniciar nossos contêineres com o docker-compose upcomando, que criará 
 Criar os recipientes com docker-compose upea -dbandeira, que irá executar o db, wordpresse webserverrecipientes no fundo:
 
 docker-compose up -d
-
+ 
 Você verá uma saída confirmando que seus serviços foram criados:
 
 Output
@@ -385,27 +389,31 @@ Creating db ... done
 Creating wordpress ... done
 Creating webserver ... done
 Creating certbot   ... done
+
+
 Usando docker-compose ps, verifique o status de seus serviços:
 
 docker-compose ps
-
-Se tudo foi bem sucedida, o seu db, wordpresse webserverserviços será Upeo certbotrecipiente irá ter saído com uma 0 mensagem de status:
+ 
+Se tudo foi bem sucedida, o seu db, wordpress e webserverserviços será Up e o certbot recipiente irá ter saído com uma 0 mensagem de status:
 
 Output
-Name                 Command               State           Ports
+  Name                 Command               State           Ports       
 -------------------------------------------------------------------------
 certbot     certbot certonly --webroot ...   Exit 0                      
 db          docker-entrypoint.sh --def ...   Up       3306/tcp, 33060/tcp
-webserver   nginx -g daemon off;             Up       0.0.0.0:80->80/tcp
-wordpress   docker-entrypoint.sh php-fpm     Up       9000/tcp           
-Se você ver outra coisa senão Upna Statecoluna para os db, wordpressou webserverserviços, ou um estado de saída diferente 0para o certbotrecipiente, certifique-se de verificar os logs de serviços com o docker-compose logscomando:
+webserver   nginx -g daemon off;             Up       0.0.0.0:80->80/tcp 
+wordpress   docker-entrypoint.sh php-fpm     Up       9000/tcp 
+
+
+Se você ver outra coisa senão Upna Statecoluna para os db, wordpress ou webserverserviços, ou um estado de saída diferente 0para o certbotrecipiente, certifique-se de verificar os logs de serviços com o docker-compose logscomando:
 
 docker-compose logs service_name
-
+ 
 Agora você pode verificar se seus certificados foram montados no webservercontêiner com docker-compose exec:
 
 docker-compose exec webserver ls -la /etc/letsencrypt/live
-
+ 
 Se suas solicitações de certificado forem bem-sucedidas, você verá uma saída como esta:
 
 Output
@@ -419,27 +427,27 @@ Agora que você sabe que sua solicitação será bem-sucedida, pode editar a cer
 Aberto docker-compose.yml:
 
 nano docker-compose.yml
-
+ 
 Encontre a seção do arquivo com a certbotdefinição de serviço e substitua o --stagingsinalizador na commandopção pelo --force-renewalsinalizador, o que dirá ao Certbot que você deseja solicitar um novo certificado com os mesmos domínios de um certificado existente. A certbotdefinição do serviço agora será semelhante a esta:
 
 ~ / wordpress / docker-compose.yml
 ...
-certbot:
-depends_on:
-- webserver
-image: certbot/certbot
-container_name: certbot
-volumes:
-- certbot-etc:/etc/letsencrypt
-- certbot-var:/var/lib/letsencrypt
-- wordpress:/var/www/html
-command: certonly --webroot --webroot-path=/var/www/html --email sammy@example.com --agree-tos --no-eff-email --force-renewal -d example.com -d www.example.com
+  certbot:
+    depends_on:
+      - webserver
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - wordpress:/var/www/html
+    command: certonly --webroot --webroot-path=/var/www/html --email sammy@example.com --agree-tos --no-eff-email --force-renewal -d example.com -d www.example.com
 ...
-
+ 
 Agora você pode executar docker-compose uppara recriar o certbotcontêiner. Também incluiremos a --no-depsopção de informar ao Compose que ele pode pular a inicialização do webserverserviço, pois já está em execução:
 
 docker-compose up --force-recreate --no-deps certbot
-
+ 
 Você verá uma saída indicando que sua solicitação de certificado foi bem-sucedida:
 
 Output
@@ -469,10 +477,10 @@ certbot      |    secure backup of this folder now. This configuration directory
 certbot      |    also contain certificates and private keys obtained by Certbot so
 certbot      |    making regular backups of this folder is ideal.
 certbot      |  - If you like Certbot, please consider supporting our work by:
-certbot      |
+certbot      | 
 certbot      |    Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
 certbot      |    Donating to EFF:                    https://eff.org/donate-le
-certbot      |
+certbot      | 
 certbot exited with code 0
 Com seus certificados instalados, você pode prosseguir para modificar a configuração do Nginx para incluir SSL.
 
@@ -482,27 +490,27 @@ Habilitar SSL em nossa configuração Nginx envolverá adicionar um redirecionam
 Como você vai recriar o webserverserviço para incluir essas adições, pode interrompê-lo agora:
 
 docker-compose stop webserver
-
+ 
 Antes de modificar o arquivo de configuração em si, vamos primeiro obter os parâmetros de segurança Nginx recomendados do Certbot usando curl:
 
 curl -sSLo nginx-conf/options-ssl-nginx.conf https://raw.githubusercontent.com/certbot/certbot/master/certbot-nginx/certbot_nginx/_internal/tls_configs/options-ssl-nginx.conf
-
+ 
 Este comando salvará esses parâmetros em um arquivo chamado options-ssl-nginx.conf, localizado no nginx-confdiretório.
 
 Em seguida, remova o arquivo de configuração Nginx que você criou anteriormente:
 
 rm nginx-conf/nginx.conf
-
+ 
 Abra outra versão do arquivo:
 
 nano nginx-conf/nginx.conf
-
+ 
 Adicione o seguinte código ao arquivo para redirecionar HTTP para HTTPS e para adicionar credenciais SSL, protocolos e cabeçalhos de segurança. Lembre-se de substituir example.compelo seu próprio domínio:
 
 ~ / wordpress / nginx-conf / nginx.conf
 server {
-listen 80;
-listen [::]:80;
+        listen 80;
+        listen [::]:80;
 
         server_name example.com www.example.com;
 
@@ -517,9 +525,9 @@ listen [::]:80;
 }
 
 server {
-listen 443 ssl http2;
-listen [::]:443 ssl http2;
-server_name example.com www.example.com;
+        listen 443 ssl http2;
+        listen [::]:443 ssl http2;
+        server_name example.com www.example.com;
 
         index index.php index.html index.htm;
 
@@ -569,7 +577,7 @@ server_name example.com www.example.com;
                 log_not_found off;
         }
 }
-
+ 
 O bloco do servidor HTTP especifica o webroot para solicitações de renovação do Certbot para o .well-known/acme-challengediretório. Ele também inclui uma diretiva de reescrita que direciona as solicitações HTTP para o diretório raiz para HTTPS.
 
 O bloco do servidor HTTPS ativa ssle http2. Para ler mais sobre como HTTP / 2 itera em protocolos HTTP e os benefícios que isso pode ter para o desempenho do site, consulte a introdução de Como configurar o Nginx com suporte a HTTP / 2 no Ubuntu 18.04 .
@@ -587,117 +595,118 @@ Antes de recriar o webserverserviço, você precisará adicionar um 443mapeament
 Abra seu docker-compose.ymlarquivo:
 
 nano docker-compose.yml
-
+ 
 Na webserverdefinição de serviço, adicione o seguinte mapeamento de porta:
 
 ~ / wordpress / docker-compose.yml
 ...
-webserver:
-depends_on:
-- wordpress
-image: nginx:1.15.12-alpine
-container_name: webserver
-restart: unless-stopped
-ports:
-- "80:80"
-- "443:443"
-volumes:
-- wordpress:/var/www/html
-- ./nginx-conf:/etc/nginx/conf.d
-- certbot-etc:/etc/letsencrypt
-networks:
-- app-network
-
+  webserver:
+    depends_on:
+      - wordpress
+    image: nginx:1.15.12-alpine
+    container_name: webserver
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - wordpress:/var/www/html
+      - ./nginx-conf:/etc/nginx/conf.d
+      - certbot-etc:/etc/letsencrypt
+    networks:
+      - app-network
+ 
 O docker-compose.ymlarquivo ficará assim quando concluído:
 
 ~ / wordpress / docker-compose.yml
 version: '3'
 
 services:
-db:
-image: mysql:8.0
-container_name: db
-restart: unless-stopped
-env_file: .env
-environment:
-- MYSQL_DATABASE=wordpress
+  db:
+    image: mysql:8.0
+    container_name: db
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - MYSQL_DATABASE=wordpress
+    volumes:
+      - dbdata:/var/lib/mysql
+    command: '--default-authentication-plugin=mysql_native_password'
+    networks:
+      - app-network
+
+  wordpress:
+    depends_on:
+      - db
+    image: wordpress:5.1.1-fpm-alpine
+    container_name: wordpress
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - WORDPRESS_DB_HOST=db:3306
+      - WORDPRESS_DB_USER=$MYSQL_USER
+      - WORDPRESS_DB_PASSWORD=$MYSQL_PASSWORD
+      - WORDPRESS_DB_NAME=wordpress
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - app-network
+
+  webserver:
+    depends_on:
+      - wordpress
+    image: nginx:1.15.12-alpine
+    container_name: webserver
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - wordpress:/var/www/html
+      - ./nginx-conf:/etc/nginx/conf.d
+      - certbot-etc:/etc/letsencrypt
+    networks:
+      - app-network
+
+  certbot:
+    depends_on:
+      - webserver
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - wordpress:/var/www/html
+    command: certonly --webroot --webroot-path=/var/www/html --email sammy@example.com --agree-tos --no-eff-email --force-renewal -d example.com -d www.example.com
+
 volumes:
-- dbdata:/var/lib/mysql
-command: '--default-authentication-plugin=mysql_native_password'
+  certbot-etc:
+  wordpress:
+  dbdata:
+
 networks:
-- app-network
-
-wordpress:
-depends_on:
-- db
-image: wordpress:5.1.1-fpm-alpine
-container_name: wordpress
-restart: unless-stopped
-env_file: .env
-environment:
-- WORDPRESS_DB_HOST=db:3306
-- WORDPRESS_DB_USER=$MYSQL_USER
-- WORDPRESS_DB_PASSWORD=$MYSQL_PASSWORD
-- WORDPRESS_DB_NAME=wordpress
-volumes:
-- wordpress:/var/www/html
-networks:
-- app-network
-
-webserver:
-depends_on:
-- wordpress
-image: nginx:1.15.12-alpine
-container_name: webserver
-restart: unless-stopped
-ports:
-- "80:80"
-- "443:443"
-volumes:
-- wordpress:/var/www/html
-- ./nginx-conf:/etc/nginx/conf.d
-- certbot-etc:/etc/letsencrypt
-networks:
-- app-network
-
-certbot:
-depends_on:
-- webserver
-image: certbot/certbot
-container_name: certbot
-volumes:
-- certbot-etc:/etc/letsencrypt
-- wordpress:/var/www/html
-command: certonly --webroot --webroot-path=/var/www/html --email sammy@example.com --agree-tos --no-eff-email --force-renewal -d example.com -d www.example.com
-
-volumes:
-certbot-etc:
-wordpress:
-dbdata:
-
-networks:
-app-network:
-driver: bridge
-
+  app-network:
+    driver: bridge
+ 
 Salve e feche o arquivo quando terminar de editar.
 
 Recrie o webserverserviço:
 
 docker-compose up -d --force-recreate --no-deps webserver
-
+ 
 Verifique seus serviços com docker-compose ps:
 
 docker-compose ps
-
+ 
 Você deve ver uma saída indicando que os seus db, wordpresse webserverserviços estão em execução:
 
 Output
-Name                 Command               State                     Ports
+  Name                 Command               State                     Ports                  
 ----------------------------------------------------------------------------------------------
 certbot     certbot certonly --webroot ...   Exit 0                                           
 db          docker-entrypoint.sh --def ...   Up       3306/tcp, 33060/tcp                     
 webserver   nginx -g daemon off;             Up       0.0.0.0:443->443/tcp, 0.0.0.0:80->80/tcp
 wordpress   docker-entrypoint.sh php-fpm     Up       9000/tcp    
+
 Com seus contêineres em execução, agora você pode concluir a instalação do WordPress por meio da interface da web.
 
 Etapa 6 - Concluindo a instalação por meio da interface da web
@@ -732,7 +741,7 @@ Os certificados do Let's Encrypt são válidos por 90 dias, portanto, convém co
 Primeiro, abra um script chamado ssl_renew.sh:
 
 nano ssl_renew.sh
-
+ 
 Adicione o seguinte código ao script para renovar seus certificados e recarregar a configuração do servidor da web. Lembre-se de substituir o nome de usuário de exemplo aqui pelo seu próprio nome de usuário não root:
 
 ~ / wordpress / ssl_renew.sh
@@ -744,7 +753,7 @@ DOCKER="/usr/bin/docker"
 cd /home/sammy/wordpress/
 $COMPOSE run certbot renew --dry-run && $COMPOSE kill -s SIGHUP webserver
 $DOCKER system prune -af
-
+ 
 Este script primeiro atribui o docker-composebinário a uma variável chamada COMPOSEe especifica a --no-ansiopção, que executará docker-composecomandos sem caracteres de controle ANSI . Em seguida, ele faz o mesmo com o dockerbinário. Por fim, ele muda para o ~/wordpressdiretório do projeto e executa os seguintes docker-composecomandos:
 
 docker-compose run: Isso iniciará um certbotcontêiner e substituirá o commandfornecido em nossa certbotdefinição de serviço. Em vez de usar o certonlysubcomando, estamos usando o renewsubcomando aqui, que renovará os certificados que estão perto de expirar. Incluímos --dry-runaqui a opção de testar nosso script.
@@ -754,21 +763,21 @@ Em seguida, ele é executado docker system prunepara remover todos os recipiente
 Feche o arquivo quando terminar de editar. Torne-o executável:
 
 chmod +x ssl_renew.sh
-
+ 
 Em seguida, abra seu arquivo raiz crontab para executar o script de renovação em um intervalo especificado:
 
 sudo crontab -e
-
+ 
 Se esta for a primeira vez que você edita este arquivo, será solicitado que você escolha um editor:
 
 Output
 no crontab for root - using an empty one
 
 Select an editor.  To change later, run 'select-editor'.
-1. /bin/nano        <---- easiest
-2. /usr/bin/vim.basic
-3. /usr/bin/vim.tiny
-4. /bin/ed
+  1. /bin/nano        <---- easiest
+  2. /usr/bin/vim.basic
+  3. /usr/bin/vim.tiny
+  4. /bin/ed
 
 Choose 1-4 [1]:
 ...
@@ -777,13 +786,13 @@ Na parte inferior do arquivo, adicione a seguinte linha:
 crontab
 ...
 */5 * * * * /home/sammy/wordpress/ssl_renew.sh >> /var/log/cron.log 2>&1
-
+ 
 Isso definirá o intervalo de trabalho para cada cinco minutos, para que você possa testar se sua solicitação de renovação funcionou conforme o planejado. Também criamos um arquivo de log,, cron.logpara registrar a saída relevante do trabalho.
 
 Após cinco minutos, verifique cron.logse a solicitação de renovação foi bem-sucedida ou não:
 
 tail -f /var/log/cron.log
-
+ 
 Você deve ver uma saída confirmando uma renovação bem-sucedida:
 
 Output
@@ -792,7 +801,7 @@ Output
 **          (The test certificates below have not been saved.)
 
 Congratulations, all renewals succeeded. The following certs have been renewed:
-/etc/letsencrypt/live/example.com/fullchain.pem (success)
+  /etc/letsencrypt/live/example.com/fullchain.pem (success)
 ** DRY RUN: simulating 'certbot renew' close to cert expiry
 **          (The test certificates above have not been saved.)
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -801,7 +810,7 @@ Agora você pode modificar o crontabarquivo para definir um intervalo diário. P
 crontab
 ...
 0 12 * * * /home/sammy/wordpress/ssl_renew.sh >> /var/log/cron.log 2>&1
-
+ 
 Você também deseja remover a --dry-runopção do seu ssl_renew.shscript:
 
 ~ / wordpress / ssl_renew.sh
@@ -813,6 +822,8 @@ DOCKER="/usr/bin/docker"
 cd /home/sammy/wordpress/
 $COMPOSE run certbot renew && $COMPOSE kill -s SIGHUP webserver
 $DOCKER system prune -af
+ 
+Seu crontrabalho garantirá que seus certificados Let's Encrypt não expirem, renovando-os quando forem elegíveis. Você também pode configurar a rotação do log com o utilitário Logrotate para girar e compactar seus arquivos de log.
 
-Seu cron trabalho garantirá que seus certificados Let's Encrypt não expirem, renovando-os quando forem elegíveis. Você também pode configurar a rotação do log com o utilitário Logrotate para girar e compactar seus arquivos de log.
-
+** Certibot
+https://community.letsencrypt.org/t/how-to-manage-and-add-names-to-etc-letsencrypt-live/38923/2
