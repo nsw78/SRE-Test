@@ -6,7 +6,7 @@
 
 
 2. Com as imagens criadas na questão 1, suba os utilizando o docker-compose e:
-   * com as imagens do webserver, php-fpm e mysql rode um wordpress de forma que o contudo seja mantido e recuperado mesmo após a destruição do compose
+   * com as imagens do webserver, php-fpm e mysql rode um wordpress de forma que o conteudo seja mantido e recuperado mesmo após a destruição do compose
    * crie um job no jenkins que publique mensagens no wordpress
 
 
