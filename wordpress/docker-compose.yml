@@ -64,6 +64,7 @@ services:
       - 8083:8080
       - 50003:50000
     container_name: my-jenkins-3
+    restart: unless-stopped
     volumes:
       - ~/jenkins_data:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
